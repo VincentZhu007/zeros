@@ -1,0 +1,21 @@
+# 内存
+megs: 32
+
+# BIOS
+romimage: file=/usr/local/Cellar/bochs/2.6.9_2/share/bochs/BIOS-bochs-latest
+
+# VGA BIOS
+vgaromimage: file=/usr/local/Cellar/bochs/2.6.9_2/share/bochs/VGABIOS-lgpl-latest
+
+# 磁盘
+floppya: 1_44=out/zeros.img, status=inserted
+
+# 硬盘
+ata0: enabled=1,ioaddr1=0x1f0
+
+boot: floppy
+
+log: out/bochsout.txt
+
+mouse: enabled=0
+# keyboard: keymap=/usr/local/Cellar/bochs/2.6.9_2/share/bochs/keymaps/x11-pc-us.map
