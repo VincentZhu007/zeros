@@ -6,12 +6,13 @@
 ; (512KB) in the future.
 ;
 
-SYSSIZE		EQU		0x3000		; 系统所占的段范围
-SETUPLEN	EQU		4			; sector amount of setup on the disk
+SYSSIZE		EQU	0x3000	; 系统所占的段范围
+SETUPLEN	EQU	4	; sector amount of setup on the disk
 
-BOOTSEG		EQU		0x07c0
-INITSEG		EQU		0x9000
-SYSSEG		EQU		0x1000
+BOOTSEG		EQU	0x07c0
+INITSEG		EQU	0x9000
+SETUPSEG	EQU	0x9020
+SYSSEG		EQU	0x1000
 
 ; ---------------------------------------------------------
 start:	
@@ -21,7 +22,7 @@ start:
 	mov	es, ax
 	sub	si, si
 	sub	di, di
-	mov	cx, 0x100			; 512 / 2 = 0x100
+	mov	cx, 0x100	; 512 / 2 = 0x100
 	rep movsw
 	jmp INITSEG:go
 go: 
@@ -29,8 +30,8 @@ go:
 ; INT 10h AH=03h 读取光标位置
 ; BH 需要返回光标的页
 ; 返回：
-; DH 光标行位置;			DL 光标列位置
-; CH 光标底部扫描线;		 CL 光标顶部扫描线
+; DH 光标行位置; DL 光标列位置
+; CH 光标底部扫描线; CL 光标顶部扫描线
 	mov	ah, 0x03	; read cursor pos
 	xor	bh, bh		; BH=00h 第0页
 	int	0x10
@@ -38,8 +39,8 @@ go:
 ; ES:BP 指向字符串
 ; 返回：
 ; CX 字符长度
-; DH 光标行位置；			DL 光标列位置
-; BL 显示属性				AL 显示模式 01h 仅字符，更新光标
+; DH 光标行位置；DL 光标列位置
+; BL 显示属性；AL 显示模式 01h 仅字符，更新光标
 	mov ax, 0x1301
 	mov bp, msg1
 	mov cx, 36
@@ -51,11 +52,10 @@ go:
 ; BIOS中断调用0x13:低端磁盘服务
 ; AH=02h 读磁盘
 ; ES:BX 内存位置
-; DH 驱动器号00h/01h;			DL 磁头号0~1
-; CH 磁道号0-1023, 高两位为CL[8,9];	CL 扇区号1-17
+; DH 驱动器号00h/01h; DL 磁头号0~1
+; CH 磁道号0-1023, 高两位为CL[8,9]; CL 扇区号1-17
 ; AL 读取的扇区数量1~80h
 ; 返回：AL 已经读区的扇区数,AH 0x00 Carry=1无错误
-
 load_setup:
 	mov ah, 0x02
 	mov al, SETUPLEN
@@ -126,11 +126,11 @@ rp_read:
 	inc cl 			; 计算下一个要读取的起始扇区
 	xor ax, ax
 	mov al, [sectors]
-	sub al, [sread]	; 计算出本磁道未读取的扇区数 al = sectors - sread
+	sub al, [sread]		; 计算出本磁道未读取的扇区数 al = sectors - sread
 	mov dx, ax
 	shl dx, 9
 	add dx, bx		; 计算出当前段地址剩余访问范围
-	jnc read_track 	; al = (al < (0x10000-bx)) ? al : (0x10000-bx)
+	jnc read_track 		; al = (al < (0x10000-bx)) ? al : (0x10000-bx)
 	shr dx, 9
 	sub al, dl		; 如果当前段访问地址耗尽，需要根据dl=bx+sread-0x10000计算读取的扇区数
 read_track:			; al, cl 已经通过前面的计算设置好了。
@@ -149,17 +149,17 @@ bad_read_track:		; 如果读取失败
 ok_read_track:
 	xor ah, ah
 	xor cx, cx
-	mov cl, al			; 保存此次成功读取的扇区数
+	mov cl, al		; 保存此次成功读取的扇区数
 	add al, [sread]
 	cmp al, [sectors]
-	jne ok1_read	; 不需要更新磁头和磁道
-	xor al, al			; 更新sread
+	jne ok1_read		; 不需要更新磁头和磁道
+	xor al, al		; 更新sread
 	mov dx, 1
 	sub dl, [head]		; 更新磁头：1-head(=0)=1, 1-head(=1)=0
 	mov [head], dl
 	jne ok1_read
 	mov ah, [track]
-	inc ah				; 更新磁道
+	inc ah			; 更新磁道
 	mov [track], ah
 ok1_read:
 	mov [sread], al		; sread = (al + sread == 0) ? 0 : al + sread

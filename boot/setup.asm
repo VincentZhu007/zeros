@@ -26,8 +26,8 @@ start:
 ; ES:BP 指向字符串
 ; 返回：
 ; CX 字符长度
-; DH 光标行位置；			DL 光标列位置
-; BL 显示属性				AL 显示模式 01h 仅字符，更新光标
+; DH 光标行位置；DL 光标列位置
+; BL 显示属性 AL 显示模式 01h 仅字符，更新光标
 	mov ax, 0x1301
 	mov bp, msg2
 	mov cx, 26
