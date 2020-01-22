@@ -1,0 +1,81 @@
+bootsect.asm 说明
+
+/*
+ * bootsect.asm对应的C示例
+ */
+
+void main()
+{
+	// 拷贝自己(bootsect)到0x90000;并跳转
+	mov(BOOTSEG, INITSEG, 512);
+	goto INITSEG+go;
+
+	// 从磁盘读取setup到0x90200
+	read(INITSEG + 0x200, 4);
+
+	// 打印信息
+	printf("\n\rLoading System...\n\r");
+
+	// 检查根设备
+	check_root(root_dev);
+
+	// 读取system到0x10000
+	rp_read(SYSSEG, SYSTEMSIZE / 512);
+
+	// 停止磁盘
+	kill_motor();
+
+	// 跳转到setup执行
+	goto setup;
+}
+
+/* 
+ * 读取磁盘中的system到内存
+ *
+ * dest: es:bp
+ * src:  track, head, sector
+ */
+void rp_read()
+{
+	es = 0x1000;
+	head = 0;
+	track = 0;
+	sread = 5;
+	sectors = 17;
+	while (es < 0x9000) {
+		bp = 0;
+		sector = sread + 1;
+		if (bp < 0xFFFF - sectors) {
+			count = sectors - sread;
+		} else {
+			count = 0xFFFF - bp;
+		}
+		read_track(bp, track, head, sector, count);
+		sread = (sread + count) % sectors;
+		bp += count;
+		if (bp == 0xFFFF) {
+			es += 0x1000;
+			bp = 0;
+			if (sread == 0) {
+				if (head == 0)
+					head = 1;
+				else {
+					head = 0;
+					track++;
+				}	
+			}
+		} else {
+			if (head == 0)
+				head = 1;
+			else {
+				head = 0;
+				track++;
+			}
+		}
+	}
+}
+
+void read_track(bp, track, head, sector, count)
+{
+	read(sector, count);
+}

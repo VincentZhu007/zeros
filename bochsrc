@@ -8,7 +8,7 @@ romimage: file=/usr/local/Cellar/bochs/2.6.9_2/share/bochs/BIOS-bochs-latest
 vgaromimage: file=/usr/local/Cellar/bochs/2.6.9_2/share/bochs/VGABIOS-lgpl-latest
 
 # 磁盘
-floppya: 1_44=out/zeros.img, status=inserted
+floppya: 1_44=build/zeros.img, status=inserted
 
 # 硬盘
 ata0: enabled=1,ioaddr1=0x1f0

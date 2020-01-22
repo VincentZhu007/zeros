@@ -1,32 +1,30 @@
+#
 # Makefile for zeros 
-# A runnable reimplement of linux-0.11.
-# ----------------------------------------------------------
+#
+# Zeros is a runnable reimplement of linux-0.11.
+#
 
-NASM	= nasm -f bin
-AS	= as
+AS	= nasm -f bin
 LD	= ld
 CC 	= gcc -mcpu=i386
 CFLAGS	= -Wall -O2 -fomit-frame-pointer
 LDFLAGS = -m elf_i386 -e startup_32
 
+
 all : img
 
 %.bin : %.asm
-	$(NASM) -l $*.lst -o $*.bin $<
+	$(AS) -l $*.lst -o $*.bin $<
 
-.c.s:
-	$(CC) $(CFLAGS) -nostdinc -Iinclude -S -o $*.s $<
-
-.s.o:
-	$(AS) -o $*.o $<
-
-.c.o:
+%.o : %.c
 	$(CC) $(CFLAGS) -nostdinc -Iinclude -c -o $*.o $<
 
-img : boot/bootsect.bin boot/bootsect.lst
-	mkdir -p out
-	dd bs=512  count=1 if=boot/bootsect.bin of=out/zeros.img
+img : boot/bootsect.bin boot/setup.bin boot/system.bin
+	mkdir -p build
+	dd bs=512 if=boot/bootsect.bin of=build/zeros.img
+	dd bs=512 count=4 seek=1 if=boot/setup.bin of=build/zeros.img
+	dd bs=512 count=384 seek=5 if=boot/system.bin of=build/zeros.img
 
 .PHONY : clean
 clean :
-	rm -rf *.bin *.lst *.o *.img ./out
+	rm -rf boot/*.bin boot/*.lst *.o *.img build/
