@@ -2,7 +2,7 @@
 CC = gcc
 CFLAG = -g -o
 
-OBJ = test_read.o
+OBJ = test_read.o test_queue.o
 
 all : ${OBJ}
 
@@ -11,6 +11,6 @@ all : ${OBJ}
 	${CC} ${CFLAG} $@ $<
 
 clean :
-	rm -rf *.o*
+	rm -rf *.o* *.dSYM
 
 

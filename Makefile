@@ -19,11 +19,11 @@ all : img
 %.o : %.c
 	$(CC) $(CFLAGS) -nostdinc -Iinclude -c -o $*.o $<
 
-img : boot/bootsect.bin boot/setup.bin boot/system.bin
+img : boot/bootsect.bin boot/setup.bin boot/header.bin
 	mkdir -p build
 	dd bs=512 if=boot/bootsect.bin of=build/zeros.img
 	dd bs=512 count=4 seek=1 if=boot/setup.bin of=build/zeros.img
-	dd bs=512 count=384 seek=5 if=boot/system.bin of=build/zeros.img
+	dd bs=512 count=384 seek=5 if=boot/header.bin of=build/zeros.img
 
 .PHONY : clean
 clean :

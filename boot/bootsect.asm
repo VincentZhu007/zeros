@@ -26,6 +26,9 @@ start:
 	rep movsw
 	jmp INITSEG:go
 go: 
+; 初始化堆栈
+	mov ss, ax
+	mov sp, 0xff00
 ; 打印信息
 ; INT 10h AH=03h 读取光标位置
 ; BH 需要返回光标的页
